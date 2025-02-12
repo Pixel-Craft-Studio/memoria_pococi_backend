@@ -1,0 +1,36 @@
+services:
+  fastapi-app:
+    build:
+      context: .
+      dockerfile: dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./app:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload --workers 4
+    networks:
+      - app-network
+    depends_on:
+      - sqlserver
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver_container
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      ACCEPT_EULA: "Y"
+    restart: always
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - app-network
+
+volumes:
+  sqlserver_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
