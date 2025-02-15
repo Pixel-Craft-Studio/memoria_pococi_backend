@@ -45,7 +45,7 @@ def post_team_member(
     )
 
 
-@router.put("/{team_member_id}")
+@router.patch("/{team_member_id}")
 def patch_team_member(
     team_member_id: str,
     team_member_update: TeamMemberUpdateModel,

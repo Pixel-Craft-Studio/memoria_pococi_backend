@@ -1,7 +1,6 @@
 import json
 from fastapi import Response
 
-
 def send_response(message: str = None, data: str = None, status_code: int = 200):
     payload = {}
 
