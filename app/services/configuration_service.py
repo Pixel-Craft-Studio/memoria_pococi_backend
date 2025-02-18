@@ -1,7 +1,7 @@
 import json
 
 from sqlalchemy.orm import Session
-from db_models.db_configuration_models import Configuration
+from db.db_models.db_configuration_models import Configuration
 from api_models.configuration import ConfigurationModel
 
 

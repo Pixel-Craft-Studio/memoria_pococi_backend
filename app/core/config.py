@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     db_host: str
     db_port: str 
     db_name: str 
+    sql_variant: str
 
     api_secret_key: str 
     access_token_expire_hours: int 

@@ -3,7 +3,7 @@ import bcrypt
 
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from db_models.db_profile import Profile
+from db.db_models.db_profile import Profile
 from api_models.profile import (
     ProfileCreateModel,
     ProfileUpdateModel,

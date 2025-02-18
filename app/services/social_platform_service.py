@@ -1,7 +1,7 @@
 import uuid
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from db_models.db_social_platform import SocialPlatform
+from db.db_models.db_social_platform import SocialPlatform
 from api_models.social_platform import (
     SocialPlatformCreateModel,
     SocialPlatformUpdateModel,

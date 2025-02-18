@@ -1,6 +1,6 @@
 import uuid
 from sqlalchemy.orm import Session
-from db_models.db_team_member_models import SocialMedia, TeamMember
+from db.db_models.db_team_member_models import SocialMedia, TeamMember
 from api_models.team_member import TeamMemberCreateModel, TeamMemberUpdateModel
 from sqlalchemy.exc import IntegrityError
 from uuid import UUID  # Asegúrate de importar UUID

@@ -1,0 +1,37 @@
+services:
+  fastapi-app:
+    build:
+      context: .
+      dockerfile: dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./app:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload --workers 4
+    networks:
+      - app-network
+    depends_on:
+      - sqlserver  
+
+  sqlserver:
+    image: postgres:latest  
+    container_name: postgres_container
+    ports:
+      - "5432:5432"  
+    environment:
+      POSTGRES_USER: "sa"
+      POSTGRES_PASSWORD: "YourStrong!Passw0rd"
+      POSTGRES_DB: "master"
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+    driver: local  
+
+networks:
+  app-network:
+    driver: bridge

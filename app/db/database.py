@@ -1,21 +1,51 @@
+import importlib
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from db_models.db_social_platform import SocialPlatform
-from db_models.db_team_member_models import TeamMember, SocialMedia
-from db_models.db_configuration_models import Configuration
-from db_models.db_profile import Profile
-from db_models.db_base import Base
+from pathlib import Path
+from db.base import Base
 from core.config import settings
 
-engine = create_engine(
-    f"mssql+pyodbc://{settings.db_user}:{settings.db_pass}@{settings.db_host},{settings.db_port}/{settings.db_name}"
-    "?driver=ODBC+Driver+17+for+SQL+Server",
-    echo=True,
-)
+POSTGRES_VARIANT = "postgres"
+MSSQL_VARIANT = "mssql"
+
+engine = None
+
+if settings.sql_variant == POSTGRES_VARIANT:
+    print(f"postgresql+psycopg2://{settings.db_user}:{settings.db_pass}@{settings.db_host}/{settings.db_name}")
+    engine = create_engine(
+        f"postgresql+psycopg2://{settings.db_user}:{settings.db_pass}@{settings.db_host}/{settings.db_name}",
+        echo=True,
+    )
+
+elif settings.sql_variant == MSSQL_VARIANT:
+    engine = create_engine(
+        f"mssql+pyodbc://{settings.db_user}:{settings.db_pass}@{settings.db_host}/{settings.db_name}"
+        "?driver=ODBC+Driver+17+for+SQL+Server",
+        echo=True,
+    )
+
+if engine is None:
+    raise ValueError("No database variant selected or an invalid SQL variant provided.")
+
+
+models_directory = Path(__file__).parent / "db_models"
+print("Dictitoriy>", models_directory)
+for filename in models_directory.glob("*.py"):
+    if filename.name != "__init__.py":
+        module_name = f"db.db_models.{filename.stem}"
+        try:
+            importlib.import_module(module_name)
+        except ModuleNotFoundError:
+            print(
+                f"Error importing module {module_name}. Make sure it's properly configured."
+            )
+
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base.metadata.create_all(bind=engine)
+
 
 def get_db():
     db = SessionLocal()
