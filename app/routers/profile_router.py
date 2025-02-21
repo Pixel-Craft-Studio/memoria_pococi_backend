@@ -19,8 +19,7 @@ router = APIRouter()
 
 @router.get("")
 def get_profiles(
-    db: Session = Depends(database.get_db),
-    current_user: str = Depends(get_current_user),
+    db: Session = Depends(database.get_db)
 ):
     profiles = get_all_profiles(db=db)
     return send_response(
@@ -33,8 +32,7 @@ def get_profiles(
 @router.get("/{profile_id}")
 def get_profile(
     profile_id: UUID,
-    db: Session = Depends(database.get_db),
-    current_user: str = Depends(get_current_user),
+    db: Session = Depends(database.get_db)
 ):
     profile = get_one_profile(db=db, profile_id=profile_id)
     if not profile:
@@ -48,7 +46,7 @@ def get_profile(
 def post_profile(
     profile: ProfileCreateModel,
     db: Session = Depends(database.get_db),
-    current_user: str = Depends(get_current_user),
+    
 ):
     try:
         created_profile = create_profile(db=db, profile=profile)

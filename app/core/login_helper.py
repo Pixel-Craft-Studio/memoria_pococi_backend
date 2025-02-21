@@ -17,7 +17,7 @@ def hash_password(plain_password):
     combined_password = password + pepper
     hashed_password = bcrypt.hashpw(combined_password, bcrypt.gensalt())
 
-    return hashed_password
+    return hashed_password.decode("utf-8")
 
 
 def verify_password(input_password, stored_hash):
