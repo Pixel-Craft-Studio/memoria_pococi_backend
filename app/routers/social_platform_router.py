@@ -1,9 +1,11 @@
+from typing import Optional
+from api_models.social_platform import SocialPlatformCreateModel
 from core.validate_helper import validate_uuid
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, UploadFile, Form
+
 from sqlalchemy.orm import Session
 from db import database
 from services.social_platform_service import (
-    SocialPlatformCreateModel,
     SocialPlatformUpdateModel,
     create_social_platform,
     get_one_social_platform,
@@ -28,8 +30,11 @@ def get_social_platforms(db: Session = Depends(database.get_db)):
 
 
 @router.get("/{platform_id}")
-def get_social_platform(platform_id: str = Depends(validate_uuid), db: Session = Depends(database.get_db)):
+def get_social_platform(
+    platform_id: str = Depends(validate_uuid), db: Session = Depends(database.get_db)
+):
     platform = get_one_social_platform(db=db, platform_id=platform_id)
+
     if not platform:
         return send_response("Plataforma social no encontrada", status_code=404)
     return send_response(
@@ -38,10 +43,19 @@ def get_social_platform(platform_id: str = Depends(validate_uuid), db: Session =
 
 
 @router.post("")
-def post_social_platform(
-    platform: SocialPlatformCreateModel, db: Session = Depends(database.get_db)
+async def post_social_platform(
+    name: str = Form(...),
+    icon: UploadFile = File(...),
+    db: Session = Depends(database.get_db),
 ):
-    created_platform = create_social_platform(db=db, platform=platform)
+    try:
+        created_platform = create_social_platform(
+            db=db, platform=SocialPlatformCreateModel(name=name), icon=icon
+        )
+
+    except Exception as e:
+        return send_response(f"{e}", status_code=400)
+
     return send_response(
         "Plataforma social creada exitosamente", created_platform.to_dict(), 201
     )
@@ -50,12 +64,16 @@ def post_social_platform(
 @router.patch("/{platform_id}")
 def patch_social_platform(
     platform_id: str,
-    platform_update: SocialPlatformUpdateModel,
+    name: str = Form(...),
+    icon: Optional[UploadFile] = File(default=None),
     db: Session = Depends(database.get_db),
 ):
     try:
         updated_platform = update_social_platform(
-            db=db, platform_id=platform_id, platform_update=platform_update
+            db=db,
+            platform_id=platform_id,
+            platform_update=SocialPlatformUpdateModel(name=name),
+            icon=icon,
         )
         return send_response(
             "Plataforma social actualizada exitosamente",

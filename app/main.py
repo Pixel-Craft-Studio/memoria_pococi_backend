@@ -7,6 +7,7 @@ from routers import (
     social_platform_router,
     profile_router,
     login_router,
+    image_router,
 )
 
 app = FastAPI()
@@ -43,6 +44,8 @@ app.include_router(
 app.include_router(
     team_member_router.router, prefix="/team-member", tags=["Team Member"]
 )
+
+app.include_router(image_router.router, prefix="/image", tags=["Images"])
 
 
 @app.get("/")

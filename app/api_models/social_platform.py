@@ -6,13 +6,11 @@ from uuid import UUID  # Importamos UUID para el manejo del identificador
 # Esquema para crear una plataforma social
 class SocialPlatformCreateModel(BaseModel):
     name: str
-    icon_url: Optional[str] = None
 
 
 # Esquema para actualizar una plataforma social
 class SocialPlatformUpdateModel(BaseModel):
     name: Optional[str] = None
-    icon_url: Optional[str] = None
 
 
 # Esquema para la respuesta de una plataforma social (con id UUID)
