@@ -96,6 +96,6 @@ class SocialMedia(Base):
             "id": str(self.id),  # Convertimos el UUID a string
             "platform_id": str(self.platform_id),  # Convertimos el UUID a string
             "platform": self.platform.name,
-            "icon_url": self.platform.icon_url,
+            "image_url": self.platform.image_url,
             "url": self.url,
         }

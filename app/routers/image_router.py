@@ -18,6 +18,6 @@ async def monitor_folder_size():
     size_in_mb = total_size / (1024 * 1024)
 
     return {
-        "total_size_in_mb": {"data": {"total_size_in_mb": round(size_in_mb, 2)}},
+        "data": {"total_size_in_mb": round(size_in_mb, 2)},
         "message": "Tamaño de la carpeta obtenido exitosamente",
     }

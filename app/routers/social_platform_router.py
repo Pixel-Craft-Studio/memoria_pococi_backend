@@ -45,12 +45,12 @@ def get_social_platform(
 @router.post("")
 async def post_social_platform(
     name: str = Form(...),
-    icon: UploadFile = File(...),
+    image: UploadFile = File(...),
     db: Session = Depends(database.get_db),
 ):
     try:
         created_platform = create_social_platform(
-            db=db, platform=SocialPlatformCreateModel(name=name), icon=icon
+            db=db, platform=SocialPlatformCreateModel(name=name), icon=image
         )
 
     except Exception as e:
@@ -65,7 +65,7 @@ async def post_social_platform(
 def patch_social_platform(
     platform_id: str,
     name: str = Form(...),
-    icon: Optional[UploadFile] = File(default=None),
+    image: Optional[UploadFile] = File(default=None),
     db: Session = Depends(database.get_db),
 ):
     try:
@@ -73,7 +73,7 @@ def patch_social_platform(
             db=db,
             platform_id=platform_id,
             platform_update=SocialPlatformUpdateModel(name=name),
-            icon=icon,
+            icon=image,
         )
         return send_response(
             "Plataforma social actualizada exitosamente",

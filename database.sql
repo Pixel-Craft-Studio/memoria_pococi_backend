@@ -29,7 +29,7 @@ CREATE TABLE tbl_team_member (
 CREATE TABLE tbl_social_platform (
     id BIGINT IDENTITY(1000,1) PRIMARY KEY,
     name VARCHAR(60) NOT NULL UNIQUE,  -- Limite de 60 caracteres
-    icon_url VARCHAR(1024), -- Limite de 1024 caracteres
+    image_url VARCHAR(1024), -- Limite de 1024 caracteres
     created_at DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
     updated_at DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET()
 );

@@ -15,7 +15,7 @@ class SocialPlatform(Base):
         default=uuid4,
     )
     name = Column(String(60), nullable=False, unique=True)
-    icon_url = Column(String(1024))
+    image_url = Column(String(1024))
     created_at = Column(
         DATETIMEOFFSET().with_variant(TIMESTAMP(timezone=True), "postgresql"),
         default=lambda: datetime.now(timezone.utc),
@@ -30,5 +30,5 @@ class SocialPlatform(Base):
         return {
             "id": str(self.id),
             "name": self.name,
-            "icon_url": self.icon_url,
+            "image_url": self.image_url,
         }

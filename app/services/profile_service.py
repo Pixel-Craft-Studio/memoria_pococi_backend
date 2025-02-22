@@ -1,17 +1,15 @@
 from core.login_helper import hash_password
-import bcrypt
-
+from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from db.db_models.db_profile import Profile
 from api_models.profile import (
     ProfileCreateModel,
     ProfileUpdateModel,
-)  
-from uuid import UUID
+)
+
 
 def create_profile(db: Session, profile: ProfileCreateModel):
-
     hashed_password = hash_password(profile.password)
 
     db_profile = Profile(
@@ -29,7 +27,7 @@ def create_profile(db: Session, profile: ProfileCreateModel):
 
     except IntegrityError as e:
         db.rollback()
-        error_msg = str(e.orig).lower()  
+        error_msg = str(e.orig).lower()
 
         if "unique constraint" in error_msg or "duplicate key" in error_msg:
             raise ValueError(f"Ya existe un perfil con el correo '{profile.email}'.")
@@ -40,16 +38,20 @@ def create_profile(db: Session, profile: ProfileCreateModel):
 
     except Exception as e:
         db.rollback()
-       
+
         raise RuntimeError(f"Error inesperado '{str(e)}'")
+
 
 # Obtener un Perfil por ID
 def get_one_profile(db: Session, profile_id: UUID):
     profile = db.query(Profile).filter(Profile.id == profile_id).first()
     return profile if profile else None
 
+
 def get_profile_by_email(db: Session, email: str):
-    profile = db.query(Profile).filter(Profile.email == email).first()
+    profile = (
+        db.query(Profile).filter(Profile.email == email, Profile.is_active).first()
+    )
     return profile
 
 

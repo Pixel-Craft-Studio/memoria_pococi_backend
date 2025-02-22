@@ -24,8 +24,8 @@ def create_social_platform(db: Session, platform: SocialPlatformCreateModel, ico
         prefix = "social-platforms"
         folder = str(db_platform.id)
         file_data = upload_image(icon, prefix, folder)
-        icon_url = f"/{prefix}/{folder}/{file_data['filename']}"
-        db_platform.icon_url = icon_url
+        image_url = f"/{prefix}/{folder}/{file_data.get('filename')}"
+        db_platform.image_url = image_url
 
         db.add(db_platform)
         db.commit()
@@ -86,11 +86,10 @@ def update_social_platform(
         try:
             prefix = "social-platforms"
             folder = str(db_platform.id)
-            print("Deleting images")
             delete_image(prefix=prefix, folder=folder)
             file_data = upload_image(icon, prefix, folder)
-            icon_url = f"/{prefix}/{folder}/{file_data['filename']}"
-            db_platform.icon_url = icon_url
+            image_url = f"/{prefix}/{folder}/{file_data.get('filename')}"
+            db_platform.image_url = image_url
         except Exception as e:
             raise Exception(f"Error al subir el icono: {str(e)}")
 
