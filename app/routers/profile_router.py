@@ -1,4 +1,4 @@
-from core.login_helper import get_current_user
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from db import database
@@ -64,7 +64,6 @@ def patch_profile(
     profile_id: UUID,
     profile_update: ProfileUpdateModel,
     db: Session = Depends(database.get_db),
-    current_user: str = Depends(get_current_user),
 ):
     try:
         updated_profile = update_profile(
@@ -82,7 +81,6 @@ def patch_profile(
 def delete_profile(
     profile_id: UUID,
     db: Session = Depends(database.get_db),
-    current_user: str = Depends(get_current_user),
 ):
     success = remove_profile(db=db, profile_id=profile_id)
     if not success:
