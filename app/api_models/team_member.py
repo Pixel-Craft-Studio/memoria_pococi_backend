@@ -24,7 +24,7 @@ class TeamMemberCreateModel(TeamMemberBaseModel):
 
 # Modelo para actualizar un TeamMember
 class TeamMemberUpdateModel(TeamMemberBaseModel):
-    pass
+    social_media: Optional[List[SocialMediaCreate]] = None
 
 
 # Modelo de respuesta para TeamMember

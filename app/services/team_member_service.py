@@ -1,4 +1,5 @@
 import uuid
+from services.images_service import delete_image, upload_image
 from sqlalchemy.orm import Session
 from db.db_models.db_team_member_models import SocialMedia, TeamMember
 from api_models.team_member import TeamMemberCreateModel, TeamMemberUpdateModel
@@ -7,15 +8,20 @@ from uuid import UUID  # Asegúrate de importar UUID
 
 
 # Crear un nuevo miembro del equipo
-def create_team_member(db: Session, team_member: TeamMemberCreateModel):
+def create_team_member(db: Session, team_member: TeamMemberCreateModel, image):
     # Generamos un ID único para el miembro del equipo
     member_id = uuid.uuid4()  # Usamos UUID directamente, no str
+
+    prefix = "team-member"
+    folder = str(member_id)
+    file_data = upload_image(image, prefix, folder)
+    image_url = f"/{prefix}/{folder}/{file_data.get('filename')}"
 
     # Creamos el objeto TeamMember
     db_team_member = TeamMember(
         id=member_id,
         name=team_member.name,
-        photo_url=team_member.photo_url,
+        photo_url=image_url,
         description=team_member.description,
         role=team_member.role,
     )
@@ -64,7 +70,8 @@ def get_all_team_members(db: Session):
 def update_team_member(
     db: Session,
     team_member_id: UUID,
-    team_member_update: TeamMemberUpdateModel,  # Cambiar a UUID
+    team_member_update: TeamMemberUpdateModel,
+    image=None,
 ):
     db_team_member = (
         db.query(TeamMember).filter(TeamMember.id == team_member_id).first()
@@ -75,11 +82,17 @@ def update_team_member(
             f"No se encontró el miembro del equipo con ID: {team_member_id}"
         )
 
+    if image:
+        prefix = "team-member"
+        folder = str(team_member_id)
+        delete_image(prefix=prefix, folder=folder)
+        file_data = upload_image(image, prefix, folder)
+        image_url = f"/{prefix}/{folder}/{file_data.get('filename')}"
+        db_team_member.photo_url = image_url
+
     # Actualizamos los campos proporcionados
     if team_member_update.name:
         db_team_member.name = team_member_update.name
-    if team_member_update.photo_url:
-        db_team_member.photo_url = team_member_update.photo_url
     if team_member_update.description:
         db_team_member.description = team_member_update.description
     if team_member_update.role:
