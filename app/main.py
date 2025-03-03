@@ -8,6 +8,8 @@ from routers import (
     profile_router,
     login_router,
     image_router,
+    timeline_category_router,
+    contact_us_router,
 )
 
 app = FastAPI()
@@ -44,6 +46,12 @@ app.include_router(
 app.include_router(
     team_member_router.router, prefix="/team-member", tags=["Team Member"]
 )
+
+app.include_router(
+    timeline_category_router.router, prefix="/timeline-category", tags=["Categories"]
+)
+
+app.include_router(contact_us_router.router, prefix="/contact-us", tags=["Contact-us"])
 
 app.include_router(image_router.router, prefix="/image", tags=["Images"])
 
