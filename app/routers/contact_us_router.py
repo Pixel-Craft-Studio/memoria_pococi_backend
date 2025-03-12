@@ -62,9 +62,6 @@ def update_contact_status_route(
     status: Optional[ContactStatus] = None,
     db: Session = Depends(database.get_db),
 ):
-    if status:
-        status = status
-
     if status and status not in ContactStatus.__members__:
         return {"message": "Estado no válido", "status_code": 404}
 

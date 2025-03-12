@@ -10,6 +10,8 @@ from routers import (
     image_router,
     timeline_category_router,
     contact_us_router,
+    timeline_year_router,
+    timeline_history_router,
 )
 
 app = FastAPI()
@@ -49,6 +51,16 @@ app.include_router(
 
 app.include_router(
     timeline_category_router.router, prefix="/timeline-category", tags=["Categories"]
+)
+
+app.include_router(
+    timeline_year_router.router, prefix="/timeline-year", tags=["Timeline Year"]
+)
+
+app.include_router(
+    timeline_history_router.router,
+    prefix="/timeline-history",
+    tags=["Timeline History"],
 )
 
 app.include_router(contact_us_router.router, prefix="/contact-us", tags=["Contact-us"])

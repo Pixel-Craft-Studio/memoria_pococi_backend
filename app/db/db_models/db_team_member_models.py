@@ -14,7 +14,7 @@ class TeamMember(Base):
     id = Column(
         UNIQUEIDENTIFIER().with_variant(
             PostgresUUID(as_uuid=True), "postgresql"
-        ),  # Usamos la variante para Postgres
+        ), 
         primary_key=True,
         default=uuid4,
     )
@@ -25,13 +25,13 @@ class TeamMember(Base):
     created_at = Column(
         DATETIMEOFFSET().with_variant(
             TIMESTAMP(timezone=True), "postgresql"
-        ),  # Usamos la variante para Postgres
+        ), 
         default=lambda: datetime.now(timezone.utc),
     )
     updated_at = Column(
         DATETIMEOFFSET().with_variant(
             TIMESTAMP(timezone=True), "postgresql"
-        ),  # Usamos la variante para Postgres
+        ), 
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
@@ -41,14 +41,14 @@ class TeamMember(Base):
 
     def to_dict(self):
         return {
-            "id": str(self.id),  # Convertimos el UUID a string
+            "id": str(self.id),  
             "name": self.name,
             "photo_url": self.photo_url,
             "description": self.description,
             "role": self.role,
             "social_media": [
                 sm.to_dict() for sm in self.social_media
-            ],  # Agregando los datos de las redes sociales
+            ],
         }
 
 
@@ -59,14 +59,14 @@ class SocialMedia(Base):
     id = Column(
         UNIQUEIDENTIFIER().with_variant(
             PostgresUUID(as_uuid=True), "postgresql"
-        ),  # Usamos la variante para Postgres
+        ), 
         primary_key=True,
         default=uuid4,
     )
     team_member_id = Column(
         UNIQUEIDENTIFIER().with_variant(
             PostgresUUID(as_uuid=True), "postgresql"
-        ),  # Usamos la variante para Postgres
+        ), 
         ForeignKey("tbl_team_member.id", ondelete="CASCADE"),
     )
     url = Column(

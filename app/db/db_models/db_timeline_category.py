@@ -1,8 +1,8 @@
+from uuid import uuid4
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import UUID as PostgresUUID, TIMESTAMP
 from sqlalchemy.dialects.mssql import UNIQUEIDENTIFIER, DATETIMEOFFSET
 from datetime import datetime, timezone
-from uuid import uuid4
 from db.base import Base
 
 
