@@ -12,6 +12,7 @@ from services.contact_us_service import (
     remove_contact_us,
 )
 from core.response_helper import send_response
+from services.email_service import send_contact_email  
 from api_models.contact_us import ContactUsCreateModel, ContactUsStatusUpdateModel
 from core.validate_helper import validate_uuid
 
@@ -24,6 +25,7 @@ async def post_contact_us(
 ):
     try:
         created_contact = create_contact_us(db=db, contact=contact)
+        send_contact_email(contact.name, contact.email, contact.message, contact.subject)
     except Exception as e:
         return send_response(f"{e}", status_code=400)
 

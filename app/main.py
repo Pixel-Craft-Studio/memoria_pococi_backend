@@ -12,6 +12,7 @@ from routers import (
     contact_us_router,
     timeline_year_router,
     timeline_history_router,
+    credentials_router
 )
 
 app = FastAPI()
@@ -38,6 +39,8 @@ app.add_middleware(
 
 
 app.include_router(login_router.router, prefix="/login", tags=["Login"])
+app.include_router(credentials_router.router, prefix="/credentials", tags=["Credentials"])
+
 app.include_router(profile_router.router, prefix="/profiles", tags=["Profile"])
 app.include_router(
     configuration_router.router, prefix="/configuration", tags=["Configuration"]

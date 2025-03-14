@@ -1,12 +1,14 @@
-from core.response_helper import send_response
-from services.profile_service import get_profile_by_email
-from core.login_helper import create_access_token, decode_access_token, verify_password
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from core.login_helper import oauth2_scheme
 from db import database
 
+from services.credentials_service import delete_recovery_by_id, get_recovery_by_id
+from core.response_helper import send_response
+from services.profile_service import get_profile_by_email
+from core.login_helper import create_access_token, decode_access_token, verify_password
 
 router = APIRouter()
 
@@ -24,12 +26,19 @@ async def dashboard_login(
     if not profile:
         return send_response("Credenciales incorrectas", status_code=401)
 
-    if not verify_password(password, profile.password_hash):
-        return send_response("Credenciales incorrectas", status_code=401)
+    if verify_password(password, profile.password_hash):
+        access_token = create_access_token(data={"sub": profile.to_response_dict()})
+        return {"access_token": access_token, "token_type": "bearer"} 
 
-    access_token = create_access_token(data={"sub": profile.to_response_dict()})
+    recovery = get_recovery_by_id(db, profile.id)
+    if recovery:
+        if recovery.expiration < datetime.now(timezone.utc): 
+            delete_recovery_by_id(db, profile.id)
+        elif verify_password(password, recovery.password):
+            access_token = create_access_token(data={"sub": profile.to_response_dict(), "isTemporal": True})
+            return {"access_token": access_token, "token_type": "bearer"}
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return send_response("Credenciales incorrectas", status_code=401)
 
 
 @router.get("/validate")

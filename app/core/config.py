@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     db_port: str 
     db_name: str 
     sql_variant: str
+    smtp_user: str
+    smtp_pass: str
 
     api_secret_key: str 
     access_token_expire_hours: int 
