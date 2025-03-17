@@ -1,3 +1,4 @@
+from typing import List
 from pydantic import BaseModel
 import enum
 
@@ -22,3 +23,5 @@ class ContactUsStatusUpdateModel(BaseModel):
 
     class Config:
         str_strip_whitespace = True
+class ContactUpdateRequestModel(BaseModel):
+    contact_ids: List[str] 

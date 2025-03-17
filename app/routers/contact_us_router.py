@@ -1,8 +1,8 @@
 from enum import Enum
-from typing import Optional
-from fastapi import APIRouter, Depends, Body
+from typing import List, Optional
+from fastapi import APIRouter, Depends, Body, Query
 from sqlalchemy.orm import Session
-from api_models.contact_us import ContactStatus
+from api_models.contact_us import ContactStatus, ContactUpdateRequestModel
 from db import database
 from services.contact_us_service import (
     create_contact_us,
@@ -64,9 +64,6 @@ def update_contact_status_route(
     status: Optional[ContactStatus] = None,
     db: Session = Depends(database.get_db),
 ):
-    if status and status not in ContactStatus.__members__:
-        return {"message": "Estado no válido", "status_code": 404}
-
     contact_status_update = ContactUsStatusUpdateModel(status=status)
 
     try:
@@ -84,6 +81,83 @@ def update_contact_status_route(
         return send_response(f"{e}", status_code=400)
 
 
+@router.patch("/status/bulk")
+def update_multiple_contacts_status_route(
+    status: ContactStatus,
+    contact_info: ContactUpdateRequestModel,
+    db: Session = Depends(database.get_db),
+):
+    updated_contacts = []
+    failed_contacts = []
+
+    contact_ids = contact_info.contact_ids
+
+    try:
+        for contact_id in contact_ids:
+            contact_status_update = ContactUsStatusUpdateModel(status=status)
+            updated_contact = update_contact_status(
+                db=db, contact_id=contact_id, contact_status_update=contact_status_update
+            )
+
+            if updated_contact:
+                updated_contacts.append(updated_contact.to_dict())
+            else:
+                failed_contacts.append(contact_id)
+
+        if failed_contacts:
+            return send_response(
+                "Algunos contactos no fueron encontrados",
+                {"actualizados": updated_contacts, "fallidos": failed_contacts},
+                207,  # Código 207 indica respuesta mixta
+            )
+
+        return send_response(
+            "Estados de los contactos actualizados exitosamente",
+            updated_contacts,
+            200,
+        )
+    except Exception as e:
+        return send_response(f"{e}", status_code=400)
+
+
+@router.delete("/bulk")
+def delete_multiple_contacts_route(
+    contact_info: ContactUpdateRequestModel,
+    db: Session = Depends(database.get_db),
+):
+    deleted_contacts = []
+    failed_contacts = []
+
+    print("Contact ids", contact_info)
+
+    contact_ids = contact_info.contact_ids
+
+    try:
+        for contact_id in contact_ids:
+            deleted_contact = remove_contact_us(
+                db=db, contact_id=contact_id
+            )
+
+            if deleted_contact:
+                deleted_contacts.append(deleted_contact)
+            else:
+                failed_contacts.append(contact_id)
+
+        if failed_contacts:
+            return send_response(
+                "Algunos contactos no pudieron ser eliminados",
+                {"eliminados": deleted_contacts, "fallidos": failed_contacts},
+                207, 
+            )
+
+        return send_response(
+            "Contactos eliminados permanentemente",
+            deleted_contacts,
+            200,
+        )
+    except Exception as e:
+        return send_response(f"{e}", status_code=400)
+    
 @router.delete("/{contact_id}")
 def delete_contact_us(contact_id: str, db: Session = Depends(database.get_db)):
     success = remove_contact_us(db=db, contact_id=contact_id)
