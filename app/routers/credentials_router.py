@@ -21,6 +21,9 @@ def recovery(
 ):
     plain_password = post_recovery_password(db, recovery_data.email)
 
+    if not plain_password:
+        return send_response("Surgió un error al generar la contraseña", status_code=400)
+
     send_recovery_email(recovery_data.email, plain_password)
 
     return send_response(
