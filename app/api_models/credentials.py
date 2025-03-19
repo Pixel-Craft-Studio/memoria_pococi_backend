@@ -5,4 +5,6 @@ class RecoveryCreateModel(BaseModel):
 
 
 class ResetCreateModel(BaseModel):
+    profile_id: str
+    currentPassword: str
     password: str

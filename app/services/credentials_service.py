@@ -50,8 +50,10 @@ def reset_password(db: Session, profile_id, password):
     profile.password_hash = hashed_password
     
     recovery = db.query(RecoveryPassword).filter(RecoveryPassword.profile_id == profile_id).first()
+
     db.add(profile)
-    db.delete(recovery)
+    if(recovery):
+        db.delete(recovery)
     db.commit()
 
 def get_recovery_by_id(db: Session, uuid):
@@ -72,7 +74,7 @@ def generate_password(
     max_specials=3,  # Cambiado de min_specials a max_specials
     min_uppercase=2,
     min_lowercase=2,
-    special_characters="!@#$%^&*()_+-=[]{}|;:,.<>?",
+    special_characters="!-@$%&*<>?",
 ):
 
     min_specials = min(2, max_specials) 
