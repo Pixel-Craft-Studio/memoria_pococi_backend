@@ -32,7 +32,7 @@ def get_timeline_histories(db: Session = Depends(database.get_db)):
 @router.get("/{id}")
 def get_timeline_history(id: str, db: Session = Depends(database.get_db)):
     """Obtiene un historia de línea de tiempo específico por su ID."""
-    timeline_history = get_one_timeline_history(db=db, id=id)
+    timeline_history = get_one_timeline_history(db=db, history_id=id)
     if not timeline_history:
         return send_response("Historia de la línea de tiempo no encontrado", status_code=404)
     return send_response(

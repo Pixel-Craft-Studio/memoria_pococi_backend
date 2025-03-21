@@ -27,10 +27,6 @@ class TimelineYear(Base):
 
     def to_dict(self):
  
-
-
-        
-
         return {
             "year": self.year,
             "title": self.title,

@@ -41,7 +41,7 @@ def get_one_timeline_year(db: Session, year: int):
 
 
 def get_all_timeline_years(db: Session):
-    return db.query(TimelineYear).all()
+    return db.query(TimelineYear).order_by(TimelineYear.year.asc()).all()
 
 
 def update_timeline_year(db: Session, year: int, timeline_year_update: TimelineYearUpdateModel, image=None):
