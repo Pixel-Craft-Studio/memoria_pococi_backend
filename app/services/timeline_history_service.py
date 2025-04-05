@@ -1,4 +1,4 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -8,12 +8,14 @@ from services.images_service import delete_image, upload_image
 
 
 def create_timeline_history(db: Session, timeline_history: TimelineHistoryCreateModel, image):
+    custom_id = uuid4()
     prefix = "timeline-history"
-    folder = str(timeline_history.timeline_id)
+    folder = str(custom_id)
     file_data = upload_image(image, prefix, folder)
     image_url = f"/{prefix}/{folder}/{file_data.get('filename')}"
 
     db_timeline_history = TimelineHistory(
+        id=custom_id,
         title=timeline_history.title,
         description=timeline_history.description,
         image_url=image_url, 
@@ -52,7 +54,7 @@ def update_timeline_history(db: Session, history_id: UUID, timeline_history_upda
 
     if image:
         prefix = "timeline-history"
-        folder = str(db_timeline_history.timeline_id)
+        folder = str(db_timeline_history.id)
         delete_image(prefix=prefix, folder=folder)
         file_data = upload_image(image, prefix, folder)
         image_url = f"/{prefix}/{folder}/{file_data.get('filename')}"
@@ -85,4 +87,26 @@ def remove_timeline_history(db: Session, history_id: UUID):
         db.delete(db_timeline_history)
         db.commit()
         return True
+    return False
+
+
+def remove_timeline_history_by_year_id(db: Session, year_id: UUID):
+    histories = db.query(TimelineHistory).filter(TimelineHistory.timeline_id == year_id).all()  # Obtener lista
+
+    if histories:
+        prefix = "timeline-history"
+
+        for history in histories:
+            history_dict = history.to_dict()
+            print("Dictionario", history_dict)
+            print("Historiadas", history_dict.get("id"))
+            
+            folder = str(history_dict.get("id"))
+            delete_image(prefix=prefix, folder=folder)
+
+            db.delete(history)
+
+        db.commit()
+        return True
+    
     return False

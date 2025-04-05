@@ -32,8 +32,8 @@ class TimelineHistory(Base):
     )
     status = Column(Enum(HistoryStatus), nullable=False, default=HistoryStatus.POSTED)  
     timeline_id = Column(
-        Integer,
-        ForeignKey("tbl_timeline_year.year", ondelete="CASCADE"),
+        UNIQUEIDENTIFIER().with_variant(PostgresUUID(as_uuid=True), "postgresql"),
+        ForeignKey("tbl_timeline_year.id", ondelete="CASCADE"),
         nullable=False,
     )
     event_date = Column(
@@ -52,7 +52,8 @@ class TimelineHistory(Base):
             "title": self.title,
             "description": self.description,
             "status": self.status.value,
-            "timeline_id": self.timeline_id,
+            "timeline_id": str(self.timeline_id),
+            "year": self.timeline.year,
             "event_date": self.event_date.isoformat() if self.event_date else None,
             "categories": [category.to_dict() for category in self.categories]
         }

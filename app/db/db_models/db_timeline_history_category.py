@@ -15,12 +15,12 @@ class TimelineHistoryCategory(Base):
     )
     timeline_history_id = Column(
         UNIQUEIDENTIFIER().with_variant(PostgresUUID(as_uuid=True), "postgresql"),
-        ForeignKey("tbl_timeline_history.id", ondelete="NO ACTION"),
+        ForeignKey("tbl_timeline_history.id", ondelete="CASCADE"),
         nullable=False,
     )
     category_id = Column(
         UNIQUEIDENTIFIER().with_variant(PostgresUUID(as_uuid=True), "postgresql"),
-        ForeignKey("tbl_timeline_category.id", ondelete="NO ACTION"),
+        ForeignKey("tbl_timeline_category.id", ondelete="CASCADE"),
         nullable=False,
     )
 

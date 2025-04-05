@@ -46,7 +46,7 @@ def get_timeline_history(id: str, db: Session = Depends(database.get_db)):
 def post_timeline_history(
     title: str = Form(...),
     description: str = Form(...),
-    timeline_id: int = Form(...),
+    timeline_id: str = Form(...),
     event_date: Optional[datetime] = Form(None), 
     image: Optional[UploadFile] = File(...),
     db: Session = Depends(database.get_db),

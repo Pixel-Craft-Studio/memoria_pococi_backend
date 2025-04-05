@@ -6,7 +6,7 @@ from typing import Optional
 class TimelineHistoryCreateModel(BaseModel):
     title: str
     description: str
-    timeline_id: int
+    timeline_id: str
     event_date: Optional[str] = None
 
 

@@ -9,6 +9,7 @@ class TimelineYearCreateModel(BaseModel):
     is_active: Optional[bool] = Field(True)
 
 class TimelineYearUpdateModel(BaseModel):
+    year: Optional[int] = Field(None)
     title: Optional[str] = Field(None)
     description: Optional[str] = Field(None)
     image_url: Optional[str] = Field(None)
