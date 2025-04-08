@@ -55,5 +55,6 @@ class TimelineHistory(Base):
             "timeline_id": str(self.timeline_id),
             "year": self.timeline.year,
             "event_date": self.event_date.isoformat() if self.event_date else None,
-            "categories": [category.to_dict() for category in self.categories]
+            "categories": [category.to_dict() for category in self.categories],
+            "sections": [section.to_dict() for section in self.sections]
         }

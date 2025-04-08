@@ -44,11 +44,12 @@ class TimelineSection(Base):
     def to_dict(self):
         return {
             "id": str(self.id),
-            "history_id": self.history_id,
+            "history_id": str(self.history_id),
             "title": self.title,
             "description": self.description,
-            "multimedia_url": self.multimedia_url,
+            "image_url": self.image_url,
             "template": self.template,
+            "isInverted": self.isInverted,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
