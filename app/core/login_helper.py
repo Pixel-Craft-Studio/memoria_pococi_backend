@@ -37,6 +37,15 @@ def create_access_token(data: dict):
     )
 
 
+
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = decode_access_token(token)
+        return payload 
+    except Exception:
+        raise Exception("El token es inválido")
+
+
 def decode_access_token(token: str):
     try:
         payload = jwt.decode(token, settings.api_secret_key, algorithms=[settings.secret_algorithm])

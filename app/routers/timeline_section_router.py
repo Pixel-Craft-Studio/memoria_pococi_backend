@@ -1,6 +1,6 @@
-import json
 from typing import Optional
 
+from core.login_helper import get_current_user
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from db import database
@@ -30,7 +30,9 @@ def get_timeline_sections(db: Session = Depends(database.get_db)):
 
 
 @router.get("/history/{history_id}")
-def get_timeline_sections_by_history(history_id: str, db: Session = Depends(database.get_db)):
+def get_timeline_sections_by_history(
+    history_id: str, db: Session = Depends(database.get_db)
+):
     sections = get_sections_by_history_id(db=db, history_id=history_id)
     return send_response(
         "Secciones de la línea de tiempo obtenidas exitosamente",
@@ -43,7 +45,9 @@ def get_timeline_sections_by_history(history_id: str, db: Session = Depends(data
 def get_timeline_section(id: str, db: Session = Depends(database.get_db)):
     timeline_section = get_one_timeline_section(db=db, id=id)
     if not timeline_section:
-        return send_response("Sección de la línea de tiempo no encontrada", status_code=404)
+        return send_response(
+            "Sección de la línea de tiempo no encontrada", status_code=404
+        )
     return send_response(
         "Sección de la línea de tiempo obtenida exitosamente",
         timeline_section.to_dict(),
@@ -60,13 +64,14 @@ def post_timeline_section(
     template: Optional[str] = Form(None),
     isInverted: Optional[bool] = Form(False),
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     timeline_section = TimelineSectionCreateModel(
         history_id=history_id,
         title=title,
         description=description,
         template=template,
-        isInverted=isInverted
+        isInverted=isInverted,
     )
 
     try:
@@ -92,13 +97,14 @@ def patch_timeline_section(
     template: Optional[str] = Form(None),
     isInverted: Optional[bool] = Form(None),
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     timeline_section_update = TimelineSectionUpdateModel(
         history_id=history_id,
         title=title,
         description=description,
         template=template,
-        isInverted=isInverted
+        isInverted=isInverted,
     )
 
     try:
@@ -115,8 +121,16 @@ def patch_timeline_section(
 
 
 @router.delete("/{id}")
-def delete_timeline_section(id: str, db: Session = Depends(database.get_db)):
+def delete_timeline_section(
+    id: str,
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
+):
     success = remove_timeline_section(db=db, id=id)
     if not success:
-        return send_response("Sección de la línea de tiempo no encontrada", status_code=404)
-    return send_response("Sección de la línea de tiempo eliminada exitosamente", status_code=200)
+        return send_response(
+            "Sección de la línea de tiempo no encontrada", status_code=404
+        )
+    return send_response(
+        "Sección de la línea de tiempo eliminada exitosamente", status_code=200
+    )

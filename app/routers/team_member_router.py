@@ -1,6 +1,7 @@
 import json
 from typing import Optional
 
+from core.login_helper import get_current_user
 from api_models.team_member import SocialMediaCreate
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from sqlalchemy.orm import Session
@@ -20,7 +21,9 @@ router = APIRouter()
 
 
 @router.get("")
-def get_team_members(db: Session = Depends(database.get_db)):
+def get_team_members(
+    db: Session = Depends(database.get_db),
+):
     team_members = get_all_team_members(db=db)
     return send_response(
         "Miembros del equipo obtenidos exitosamente",
@@ -30,7 +33,11 @@ def get_team_members(db: Session = Depends(database.get_db)):
 
 
 @router.get("/{team_member_id}")
-def get_team_member(team_member_id: str, db: Session = Depends(database.get_db)):
+def get_team_member(
+    team_member_id: str,
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
+):
     team_member = get_one_team_member(db=db, team_member_id=team_member_id)
     if not team_member:
         return send_response("Miembro del equipo no encontrado", status_code=404)
@@ -47,6 +54,7 @@ def post_team_member(
     role: str = Form(...),
     social_media: Optional[str] = Form("[]"),
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     try:
         social_media_list = json.loads(social_media)
@@ -80,6 +88,7 @@ def patch_team_member(
     role: Optional[str] = Form(None),
     social_media: Optional[str] = Form("[]"),
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     try:
         social_media_list = json.loads(social_media)
@@ -109,7 +118,11 @@ def patch_team_member(
 
 
 @router.delete("/{team_member_id}")
-def delete_team_member(team_member_id: str, db: Session = Depends(database.get_db)):
+def delete_team_member(
+    team_member_id: str,
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
+):
     success = remove_team_member(db=db, team_member_id=team_member_id)
     if not success:
         return send_response("Miembro del equipo no encontrado", status_code=404)

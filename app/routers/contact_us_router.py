@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import List, Optional
+from core.login_helper import get_current_user
 from fastapi import APIRouter, Depends, Body, Query
 from sqlalchemy.orm import Session
 from api_models.contact_us import ContactStatus, ContactUpdateRequestModel
@@ -12,7 +13,7 @@ from services.contact_us_service import (
     remove_contact_us,
 )
 from core.response_helper import send_response
-from services.email_service import send_contact_email  
+from services.email_service import send_contact_email
 from api_models.contact_us import ContactUsCreateModel, ContactUsStatusUpdateModel
 from core.validate_helper import validate_uuid
 
@@ -21,11 +22,14 @@ router = APIRouter()
 
 @router.post("")
 async def post_contact_us(
-    contact: ContactUsCreateModel, db: Session = Depends(database.get_db)
+    contact: ContactUsCreateModel,
+    db: Session = Depends(database.get_db),
 ):
     try:
         created_contact = create_contact_us(db=db, contact=contact)
-        send_contact_email(contact.name, contact.email, contact.message, contact.subject)
+        send_contact_email(
+            contact.name, contact.email, contact.message, contact.subject
+        )
     except Exception as e:
         return send_response(f"{e}", status_code=400)
 
@@ -34,7 +38,9 @@ async def post_contact_us(
 
 @router.get("")
 def get_contacts(
-    db: Session = Depends(database.get_db), status: Optional[ContactStatus] = None
+    db: Session = Depends(database.get_db),
+    status: Optional[ContactStatus] = None,
+    current_user: dict = Depends(get_current_user),
 ):
     if status:
         status = status
@@ -49,7 +55,9 @@ def get_contacts(
 
 @router.get("/{contact_id}")
 def get_contact(
-    contact_id: str = Depends(validate_uuid), db: Session = Depends(database.get_db)
+    contact_id: str = Depends(validate_uuid),
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     contact = get_one_contact(db=db, contact_id=contact_id)
 
@@ -63,6 +71,7 @@ def update_contact_status_route(
     contact_id: str,
     status: Optional[ContactStatus] = None,
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     contact_status_update = ContactUsStatusUpdateModel(status=status)
 
@@ -86,6 +95,7 @@ def update_multiple_contacts_status_route(
     status: ContactStatus,
     contact_info: ContactUpdateRequestModel,
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     updated_contacts = []
     failed_contacts = []
@@ -96,7 +106,9 @@ def update_multiple_contacts_status_route(
         for contact_id in contact_ids:
             contact_status_update = ContactUsStatusUpdateModel(status=status)
             updated_contact = update_contact_status(
-                db=db, contact_id=contact_id, contact_status_update=contact_status_update
+                db=db,
+                contact_id=contact_id,
+                contact_status_update=contact_status_update,
             )
 
             if updated_contact:
@@ -124,19 +136,16 @@ def update_multiple_contacts_status_route(
 def delete_multiple_contacts_route(
     contact_info: ContactUpdateRequestModel,
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     deleted_contacts = []
     failed_contacts = []
-
-    print("Contact ids", contact_info)
 
     contact_ids = contact_info.contact_ids
 
     try:
         for contact_id in contact_ids:
-            deleted_contact = remove_contact_us(
-                db=db, contact_id=contact_id
-            )
+            deleted_contact = remove_contact_us(db=db, contact_id=contact_id)
 
             if deleted_contact:
                 deleted_contacts.append(deleted_contact)
@@ -147,7 +156,7 @@ def delete_multiple_contacts_route(
             return send_response(
                 "Algunos contactos no pudieron ser eliminados",
                 {"eliminados": deleted_contacts, "fallidos": failed_contacts},
-                207, 
+                207,
             )
 
         return send_response(
@@ -157,9 +166,14 @@ def delete_multiple_contacts_route(
         )
     except Exception as e:
         return send_response(f"{e}", status_code=400)
-    
+
+
 @router.delete("/{contact_id}")
-def delete_contact_us(contact_id: str, db: Session = Depends(database.get_db)):
+def delete_contact_us(
+    contact_id: str,
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
+):
     success = remove_contact_us(db=db, contact_id=contact_id)
     if not success:
         return send_response("Contacto no encontrado", status_code=404)

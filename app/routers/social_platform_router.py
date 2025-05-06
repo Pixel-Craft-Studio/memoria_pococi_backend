@@ -1,4 +1,5 @@
 from typing import Optional
+from core.login_helper import get_current_user
 from api_models.social_platform import SocialPlatformCreateModel
 from core.validate_helper import validate_uuid
 from fastapi import APIRouter, Depends, File, UploadFile, Form
@@ -19,7 +20,10 @@ router = APIRouter()
 
 
 @router.get("")
-def get_social_platforms(db: Session = Depends(database.get_db)):
+def get_social_platforms(
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
+):
     platforms = get_all_social_platforms(db=db)
 
     return send_response(
@@ -31,7 +35,9 @@ def get_social_platforms(db: Session = Depends(database.get_db)):
 
 @router.get("/{platform_id}")
 def get_social_platform(
-    platform_id: str = Depends(validate_uuid), db: Session = Depends(database.get_db)
+    platform_id: str = Depends(validate_uuid),
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     platform = get_one_social_platform(db=db, platform_id=platform_id)
 
@@ -47,6 +53,7 @@ async def post_social_platform(
     name: str = Form(...),
     image: UploadFile = File(...),
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     try:
         created_platform = create_social_platform(
@@ -67,6 +74,7 @@ def patch_social_platform(
     name: str = Form(...),
     image: Optional[UploadFile] = File(default=None),
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     try:
         updated_platform = update_social_platform(
@@ -86,7 +94,11 @@ def patch_social_platform(
 
 
 @router.delete("/{platform_id}")
-def delete_social_platform(platform_id: str, db: Session = Depends(database.get_db)):
+def delete_social_platform(
+    platform_id: str,
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
+):
     success = remove_social_platform(db=db, platform_id=platform_id)
     if not success:
         return send_response("Plataforma social no encontrada", status_code=404)

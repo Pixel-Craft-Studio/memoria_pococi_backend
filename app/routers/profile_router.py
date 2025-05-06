@@ -1,4 +1,5 @@
 
+from core.login_helper import get_current_user
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from db import database
@@ -19,7 +20,8 @@ router = APIRouter()
 
 @router.get("")
 def get_profiles(
-    db: Session = Depends(database.get_db)
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     profiles = get_all_profiles(db=db)
     return send_response(
@@ -32,7 +34,8 @@ def get_profiles(
 @router.get("/{profile_id}")
 def get_profile(
     profile_id: UUID,
-    db: Session = Depends(database.get_db)
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     profile = get_one_profile(db=db, profile_id=profile_id)
     if not profile:
@@ -46,7 +49,7 @@ def get_profile(
 def post_profile(
     profile: ProfileCreateModel,
     db: Session = Depends(database.get_db),
-    
+    current_user: dict = Depends(get_current_user)
 ):
     try:
         created_profile = create_profile(db=db, profile=profile)
@@ -64,6 +67,7 @@ def patch_profile(
     profile_id: UUID,
     profile_update: ProfileUpdateModel,
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     try:
         updated_profile = update_profile(
@@ -81,6 +85,7 @@ def patch_profile(
 def delete_profile(
     profile_id: UUID,
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     success = remove_profile(db=db, profile_id=profile_id)
     if not success:

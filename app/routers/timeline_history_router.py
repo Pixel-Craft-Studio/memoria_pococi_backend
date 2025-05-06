@@ -1,3 +1,4 @@
+from core.login_helper import get_current_user
 from fastapi import APIRouter, Depends, Form, File, UploadFile
 from datetime import datetime
 from sqlalchemy.orm import Session
@@ -11,7 +12,10 @@ from services.timeline_history_service import (
     remove_timeline_history,
 )
 from api_models.timeline_history import HistoryStatus
-from api_models.timeline_history import TimelineHistoryCreateModel, TimelineHistoryUpdateModel
+from api_models.timeline_history import (
+    TimelineHistoryCreateModel,
+    TimelineHistoryUpdateModel,
+)
 
 from core.response_helper import send_response
 
@@ -34,7 +38,9 @@ def get_timeline_history(id: str, db: Session = Depends(database.get_db)):
     """Obtiene un historia de línea de tiempo específico por su ID."""
     timeline_history = get_one_timeline_history(db=db, history_id=id)
     if not timeline_history:
-        return send_response("Historia de la línea de tiempo no encontrado", status_code=404)
+        return send_response(
+            "Historia de la línea de tiempo no encontrado", status_code=404
+        )
     return send_response(
         "Historia de la línea de tiempo obtenido exitosamente",
         timeline_history.to_dict(),
@@ -47,9 +53,10 @@ def post_timeline_history(
     title: str = Form(...),
     description: str = Form(...),
     timeline_id: str = Form(...),
-    event_date: Optional[datetime] = Form(None), 
+    event_date: Optional[datetime] = Form(None),
     image: Optional[UploadFile] = File(...),
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     """Crea un nuevo historia de la línea de tiempo."""
     timeline_history = TimelineHistoryCreateModel(
@@ -78,9 +85,10 @@ def patch_timeline_history(
     title: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
     status: Optional[str] = Form(None),
-    event_date: Optional[str] = Form(None),  # Puedes usar datetime si prefieres manejar fechas
+    event_date: Optional[str] = Form(None),
     image: Optional[UploadFile] = File(None),
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     """Actualiza un historia de la línea de tiempo existente."""
     timeline_history_update = TimelineHistoryUpdateModel(
@@ -101,9 +109,17 @@ def patch_timeline_history(
 
 
 @router.delete("/{id}")
-def delete_timeline_history(id: str, db: Session = Depends(database.get_db)):
+def delete_timeline_history(
+    id: str,
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
+):
     """Elimina un historia de la línea de tiempo por su ID."""
     success = remove_timeline_history(db=db, id=id)
     if not success:
-        return send_response("Historia de la línea de tiempo no encontrado", status_code=404)
-    return send_response("Historia de la línea de tiempo eliminado exitosamente", status_code=200)
+        return send_response(
+            "Historia de la línea de tiempo no encontrado", status_code=404
+        )
+    return send_response(
+        "Historia de la línea de tiempo eliminado exitosamente", status_code=200
+    )

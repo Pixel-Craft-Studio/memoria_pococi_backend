@@ -1,6 +1,6 @@
-import json
 from typing import Optional
 
+from core.login_helper import get_current_user
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from db import database
@@ -14,13 +14,10 @@ from services.timeline_year_service import (
     update_timeline_year,
     remove_timeline_year,
 )
-from services.timeline_history_service import (
-    remove_timeline_history_by_year_id
-)
+from services.timeline_history_service import remove_timeline_history_by_year_id
 from core.response_helper import send_response
 
 router = APIRouter()
-
 
 @router.get("")
 def get_timeline_years(db: Session = Depends(database.get_db)):
@@ -43,6 +40,7 @@ def get_timeline_year_by_year(year: str, db: Session = Depends(database.get_db))
         200,
     )
 
+
 @router.get("/{id}")
 def get_timeline_year(id: str, db: Session = Depends(database.get_db)):
     timeline_year = get_one_timeline_year(db=db, id=id)
@@ -61,8 +59,8 @@ def post_timeline_year(
     title: str = Form(...),
     description: str = Form(...),
     image: Optional[UploadFile] = File(...),
-    
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     timeline_year = TimelineYearCreateModel(
         year=year, title=title, description=description
@@ -83,13 +81,14 @@ def post_timeline_year(
 
 @router.patch("/{id}")
 def patch_timeline_year(
-    id:str,
+    id: str,
     year: Optional[int] = Form(None),
     title: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
     image: Optional[UploadFile] = File(None),
     is_active: Optional[bool] = Form(None),
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     timeline_year_update = TimelineYearUpdateModel(
         year=year, title=title, description=description, is_active=is_active
@@ -109,11 +108,16 @@ def patch_timeline_year(
 
 
 @router.delete("/{id}")
-def delete_timeline_year(id: str, db: Session = Depends(database.get_db)):
-    
+def delete_timeline_year(
+    id: str,
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
+):
     histories_success = remove_timeline_history_by_year_id(db=db, year_id=id)
 
     success = remove_timeline_year(db=db, id=id)
     if not success:
         return send_response("Año de la línea de tiempo no encontrado", status_code=404)
-    return send_response("Año de la línea de tiempo eliminado exitosamente", status_code=200)
+    return send_response(
+        "Año de la línea de tiempo eliminado exitosamente", status_code=200
+    )

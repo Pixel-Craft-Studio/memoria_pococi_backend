@@ -1,6 +1,9 @@
 import os
 import shutil
+
 from fastapi import UploadFile, HTTPException
+import tempfile
+from PIL import Image
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -10,21 +13,33 @@ def upload_image(file: UploadFile, prefix: str = "", folder: str = ""):
     save_dir = os.path.join(UPLOAD_DIR, prefix, folder).rstrip("/")
     os.makedirs(save_dir, exist_ok=True)
 
-    file_extension = os.path.splitext(file.filename)[-1]
+    file_extension = ".webp" 
     new_filename = f"{folder}{file_extension}"
-    file_path = os.path.join(save_dir, new_filename)
+    final_path = os.path.join(save_dir, new_filename)
 
     try:
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".tmp") as tmp:
+            shutil.copyfileobj(file.file, tmp)
+            tmp_path = tmp.name
+
+        process_image(tmp_path, final_path, 1200, 800)
+        os.remove(tmp_path)
+
     except Exception:
-        raise Exception("Surgió un error al subir la imagen")
+        raise Exception("An error occurred while uploading or processing the image")
 
     return {
         "filename": new_filename,
-        "path": file_path,
-        "message": "Imagen subida exitosamente",
+        "path": final_path,
+        "message": "Image uploaded and processed successfully",
     }
+
+
+def process_image(input_path, output_path, target_width, target_height):
+    with Image.open(input_path) as image:
+        image.thumbnail((target_width, target_height), Image.LANCZOS)
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        image.save(output_path, format="WEBP", quality=85)
 
 
 def delete_image(prefix: str = "", folder: str = "", filename: str = ""):
@@ -61,4 +76,4 @@ def get_folder_size(prefix: str = "", folder: str = "") -> int:
             file_path = os.path.join(dirpath, filename)
             total_size += os.path.getsize(file_path)
 
-    return total_size  
+    return total_size

@@ -1,4 +1,5 @@
 from typing import Optional
+from core.login_helper import get_current_user
 from db.db_models.db_configuration_models import Configuration
 from services.images_service import upload_image, delete_image
 from core.response_helper import send_response
@@ -19,6 +20,7 @@ router = APIRouter()
 
 # Specific configuration endpoints.
 
+
 @router.get("/about-us")
 def get_about_config(db: Session = Depends(database.get_db)):
     configuration = get_configuration(db, "about-us")
@@ -32,13 +34,14 @@ def get_about_config(db: Session = Depends(database.get_db)):
         "Configuración obtenida exitosamente", configuration.to_dict(), 200
     )
 
+
 @router.patch("/about-us")
 def update_about_config(
     description: str = Form(...),
     image: Optional[UploadFile] = File(default=None),
     db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
-
     configuration = ConfigurationModel(
         key="about-us",
         content={
@@ -54,9 +57,11 @@ def update_about_config(
 
 
 # General configuration endpoints
-
 @router.get("")
-def get_all_configs(db: Session = Depends(database.get_db)):
+def get_all_configs(
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
+):
     configurations = get_all_configurations(db=db)
     return send_response(
         "Configuraciones obtenidas exitosamente",
@@ -66,7 +71,11 @@ def get_all_configs(db: Session = Depends(database.get_db)):
 
 
 @router.get("/{key}")
-def get_config(key: str, db: Session = Depends(database.get_db)):
+def get_config(
+    key: str,
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
+):
     configuration = get_configuration(db, key)
     if not configuration:
         return send_response("Configuración no encontrada", status_code=404)
@@ -76,7 +85,11 @@ def get_config(key: str, db: Session = Depends(database.get_db)):
 
 
 @router.post("")
-def create_config(config: ConfigurationModel, db: Session = Depends(database.get_db)):
+def create_config(
+    config: ConfigurationModel,
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
+):
     try:
         configuration = create_configuration(db, config)
 
@@ -90,7 +103,10 @@ def create_config(config: ConfigurationModel, db: Session = Depends(database.get
 
 @router.patch("/{key}")
 def update_config(
-    key: str, config: ConfigurationModel, db: Session = Depends(database.get_db)
+    key: str,
+    config: ConfigurationModel,
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     configuration = update_configuration(db, config, key)
 
@@ -100,7 +116,11 @@ def update_config(
 
 
 @router.delete("/{key}")
-def delete_config(key: str, db: Session = Depends(database.get_db)):
+def delete_config(
+    key: str,
+    db: Session = Depends(database.get_db),
+    current_user: dict = Depends(get_current_user),
+):
     if not delete_configuration(db, key):
         return send_response("Configuración no encontrada", status_code=404)
 

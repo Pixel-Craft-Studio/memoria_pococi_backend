@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from core.login_helper import get_current_user
+from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse
 from services.images_service import get_image, get_folder_size
 
@@ -12,7 +13,7 @@ async def get_image_route(prefix: str, folder: str, filename: str):
 
 
 @router.get("/monitor")
-async def monitor_folder_size():
+async def monitor_folder_size(current_user: dict = Depends(get_current_user),):
     total_size = get_folder_size()
 
     size_in_mb = total_size / (1024 * 1024)
