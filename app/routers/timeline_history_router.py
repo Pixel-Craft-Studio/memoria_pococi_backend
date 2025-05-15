@@ -1,8 +1,9 @@
+import json
 from core.login_helper import get_current_user
 from fastapi import APIRouter, Depends, Form, File, UploadFile
 from datetime import datetime
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import List, Optional
 from db import database
 from services.timeline_history_service import (
     create_timeline_history,
@@ -55,6 +56,7 @@ def post_timeline_history(
     timeline_id: str = Form(...),
     event_date: Optional[datetime] = Form(None),
     image: Optional[UploadFile] = File(...),
+    categories: Optional[List[str]] = Form([]),
     db: Session = Depends(database.get_db),
     current_user: dict = Depends(get_current_user),
 ):
@@ -64,8 +66,9 @@ def post_timeline_history(
         description=description,
         timeline_id=timeline_id,
         event_date=event_date.strftime("%Y-%m-%d %H:%M:%S"),
+        categories=categories,
     )
-
+    print(categories)
     try:
         created_timeline_history = create_timeline_history(
             db=db, timeline_history=timeline_history, image=image
@@ -85,19 +88,26 @@ def patch_timeline_history(
     title: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
     status: Optional[str] = Form(None),
-    event_date: Optional[str] = Form(None),
+    event_date: Optional[datetime] = Form(None),
     image: Optional[UploadFile] = File(None),
+    categories: Optional[List[str]] = Form(None),
     db: Session = Depends(database.get_db),
     current_user: dict = Depends(get_current_user),
 ):
-    """Actualiza un historia de la línea de tiempo existente."""
+
+    if event_date:
+        event_date=event_date.strftime("%Y-%m-%d %H:%M:%S"),
+
     timeline_history_update = TimelineHistoryUpdateModel(
-        title=title, description=description, status=status, event_date=event_date
+        title=title,
+        description=description,
+        status=status,
+        categories=categories,
     )
 
     try:
         updated_timeline_history = update_timeline_history(
-            db=db, id=id, timeline_history_update=timeline_history_update, image=image
+            db=db, history_id=id, timeline_history_update=timeline_history_update, image=image
         )
         return send_response(
             "Historia de la línea de tiempo actualizado exitosamente",

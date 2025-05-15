@@ -1,5 +1,6 @@
 from uuid import UUID, uuid4
 from datetime import datetime, timezone
+from db.db_models.db_timeline_history_category import TimelineHistoryCategory
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from db.db_models.db_timeline_history import TimelineHistory
@@ -24,7 +25,13 @@ def create_timeline_history(db: Session, timeline_history: TimelineHistoryCreate
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),
     )
+    
 
+    for category in timeline_history.categories:
+        association = TimelineHistoryCategory(category_id=category)
+        db_timeline_history.categories.append(association)
+    
+    
     try:
         db.add(db_timeline_history)
         db.commit()
@@ -69,7 +76,18 @@ def update_timeline_history(db: Session, history_id: UUID, timeline_history_upda
     if timeline_history_update.event_date:
         db_timeline_history.event_date = timeline_history_update.event_date
 
+    if timeline_history_update.categories:
+        db.query(TimelineHistoryCategory).filter(TimelineHistoryCategory.timeline_history_id == history_id).delete()
+        
+        for category in timeline_history_update.categories:
+            association = TimelineHistoryCategory(category_id=category)
+            db_timeline_history.categories.append(association)
+
     db_timeline_history.updated_at = datetime.now(timezone.utc)
+
+    
+
+
 
     db.commit()
     db.refresh(db_timeline_history)
@@ -98,8 +116,6 @@ def remove_timeline_history_by_year_id(db: Session, year_id: UUID):
 
         for history in histories:
             history_dict = history.to_dict()
-            print("Dictionario", history_dict)
-            print("Historiadas", history_dict.get("id"))
             
             folder = str(history_dict.get("id"))
             delete_image(prefix=prefix, folder=folder)
